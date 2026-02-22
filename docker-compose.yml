@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  # Backend - Express API
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: plater-server
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+    volumes:
+      - ./server/uploads:/app/uploads
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Frontend - React + Nginx
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: plater-client
+    ports:
+      - "80:80"
+    depends_on:
+      server:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  server-uploads:
+    driver: local
