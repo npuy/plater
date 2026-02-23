@@ -71,7 +71,7 @@ jobs:
           ssh $SSH_HOST << 'EOF'
             set -e
             
-            cd $SSH_PATH
+            cd /home/deployer/plater
             
             # Rebuild and restart containers
             echo "🔄 Stopping containers..."
