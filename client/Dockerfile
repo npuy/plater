@@ -3,6 +3,9 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
+# Aceptar variables de entorno como build args
+ARG VITE_API_URL=http://localhost:3000
+
 # Copiar package.json y package-lock.json
 COPY package*.json ./
 
@@ -14,8 +17,8 @@ COPY src ./src
 COPY public ./public
 COPY index.html vite.config.ts tsconfig.json tsconfig.app.json tsconfig.node.json tailwind.config.js postcss.config.js ./
 
-# Compilar la aplicación
-RUN npm run build
+# Compilar la aplicación con las variables de entorno
+RUN VITE_API_URL=${VITE_API_URL} npm run build
 
 # Etapa de producción - servir con nginx
 FROM nginx:alpine
