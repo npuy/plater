@@ -8,19 +8,20 @@ services:
       dockerfile: Dockerfile
     container_name: plater-server
     ports:
-      - "3000:3000"
+      - "22883:3000"
     environment:
       - NODE_ENV=production
       - PORT=3000
     volumes:
       - ./server/uploads:/app/uploads
+      - ./server/data:/app/data
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
   # Frontend - React + Nginx
   client:
@@ -29,17 +30,17 @@ services:
       dockerfile: Dockerfile
     container_name: plater-client
     ports:
-      - "80:80"
+      - "2288:80"
     depends_on:
       server:
-        condition: service_healthy
+        condition: service_started
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
 volumes:
   server-uploads:

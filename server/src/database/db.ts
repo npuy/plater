@@ -1,7 +1,14 @@
 import Database from "better-sqlite3";
 import path from "path";
+import fs from "fs";
 
-const db = new Database(path.join(__dirname, "../../plater.db"));
+// Crear directorio de datos si no existe
+const dataDir = path.join(__dirname, "../../data");
+if (!fs.existsSync(dataDir)) {
+  fs.mkdirSync(dataDir, { recursive: true });
+}
+
+const db = new Database(path.join(dataDir, "plater.db"));
 
 // Crear tabla de matrículas
 db.exec(`

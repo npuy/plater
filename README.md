@@ -5,12 +5,14 @@ Una aplicación web para registrar y administrar fotografías de matrículas veh
 ## Tecnologías Utilizadas
 
 ### Frontend
+
 - React 18
 - TypeScript
 - Vite
 - Tailwind CSS
 
 ### Backend
+
 - Node.js
 - Express
 - TypeScript
@@ -55,6 +57,7 @@ plater/
 ## Instalación
 
 ### Requisitos Previos
+
 - Node.js 20.x o superior
 - npm
 - Docker y Docker Compose (para despliegue con Docker)
@@ -84,6 +87,7 @@ La aplicación estará disponible en `http://localhost:5173`
 ### Opción 2: Despliegue con Docker
 
 #### Requisitos
+
 - Docker
 - Docker Compose
 
@@ -94,8 +98,9 @@ docker-compose up --build
 ```
 
 Esto iniciará automáticamente:
-- **Backend** en `http://localhost:3000`
-- **Frontend** en `http://localhost` (puerto 80)
+
+- **Frontend** en `http://localhost:2288`
+- **Backend** en `http://localhost:22883`
 
 #### Comandos útiles
 
@@ -114,14 +119,17 @@ docker-compose up -d
 ```
 
 #### Volúmenes
+
 Las imágenes subidas se persisten en `./server/uploads/` en tu máquina local.
 
 ## API Endpoints
 
 ### POST /api/plates
+
 Crear una nueva matrícula
 
 **Body (FormData):**
+
 - `image`: archivo de imagen (requerido)
 - `plate_number`: string (requerido)
 - `date`: string en formato YYYY-MM-DD (requerido)
@@ -130,9 +138,11 @@ Crear una nueva matrícula
 **Response:** Objeto Plate creado
 
 ### GET /api/plates
+
 Obtener lista de matrículas
 
 **Query Parameters:**
+
 - `plate_number`: filtrar por matrícula (búsqueda parcial)
 - `date_from`: fecha mínima
 - `date_to`: fecha máxima
@@ -140,6 +150,7 @@ Obtener lista de matrículas
 **Response:** Array de objetos Plate
 
 ### GET /api/plates/:id
+
 Obtener una matrícula por ID
 
 **Response:** Objeto Plate
@@ -148,32 +159,62 @@ Obtener una matrícula por ID
 
 ### Tabla: plates
 
-| Campo        | Tipo     | Descripción                    |
-|-------------|----------|--------------------------------|
-| id          | INTEGER  | Primary key                    |
-| plate_number| TEXT     | Número de matrícula            |
-| image_path  | TEXT     | Ruta de la imagen              |
-| date        | TEXT     | Fecha del registro             |
-| description | TEXT     | Descripción opcional           |
-| created_at  | DATETIME | Timestamp de creación          |
+| Campo        | Tipo     | Descripción           |
+| ------------ | -------- | --------------------- |
+| id           | INTEGER  | Primary key           |
+| plate_number | TEXT     | Número de matrícula   |
+| image_path   | TEXT     | Ruta de la imagen     |
+| date         | TEXT     | Fecha del registro    |
+| description  | TEXT     | Descripción opcional  |
+| created_at   | DATETIME | Timestamp de creación |
 
 ## Scripts Disponibles
 
 ### Backend
+
 - `npm run dev` - Ejecutar en modo desarrollo con hot-reload
 - `npm run build` - Compilar TypeScript a JavaScript
 - `npm start` - Ejecutar versión compilada
 
 ### Frontend
+
 - `npm run dev` - Ejecutar en modo desarrollo
 - `npm run build` - Compilar para producción
 - `npm run preview` - Vista previa de build de producción
 
-## Almacenamiento de Imágenes
+## Almacenamiento de Datos
 
-Las imágenes se almacenan localmente en la carpeta `server/uploads/` con nombres únicos generados automáticamente.
+### Base de Datos
 
-Formato: `{timestamp}-{random}.{extension}`
+- **Ubicación**: `server/data/plater.db`
+- **Tipo**: SQLite
+- **Persistencia**: Almacenada en volumen separado en Docker
+- Se crea automáticamente en la primera ejecución
+
+### Imágenes
+
+- **Ubicación**: `server/uploads/`
+- **Nombrado**: `{timestamp}-{random}.{extension}`
+- **Persistencia**: Almacenadas en volumen separado en Docker
+- Límite de tamaño: 5MB por imagen
+
+### En Docker
+
+Los volúmenes están mapeados así:
+
+```yaml
+volumes:
+  - ./server/uploads:/app/uploads # Imágenes
+  - ./server/data:/app/data # Base de datos
+```
+
+Esto significa que los datos persisten en tu servidor incluso si eliminas los contenedores:
+
+```bash
+# Los datos se conservan en estas carpetas
+server/uploads/      # Todas las imágenes
+server/data/         # Archivo plater.db
+```
 
 ## Estructura Docker
 
@@ -200,8 +241,8 @@ nginx.conf          - Configuración de Nginx para proxy inverso
 - Búsqueda por descripción
 - Tags/categorías personalizadas
 - Autenticación de usuarios
-- Variables de entorno configurables
 - Certificados SSL/TLS
+- Dashboard de estadísticas
 
 ## Licencia
 

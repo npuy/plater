@@ -12,7 +12,7 @@ RUN npm ci --legacy-peer-deps
 # Copiar código fuente
 COPY src ./src
 COPY public ./public
-COPY index.html vite.config.ts tsconfig.json tailwind.config.js postcss.config.js ./
+COPY index.html vite.config.ts tsconfig.json tsconfig.app.json tsconfig.node.json tailwind.config.js postcss.config.js ./
 
 # Compilar la aplicación
 RUN npm run build

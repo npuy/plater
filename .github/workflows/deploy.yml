@@ -1,0 +1,128 @@
+name: Deploy to Server
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      SSH_HOST: ssh.nicolaspereira.me
+      SSH_USER: deployer
+      SSH_PATH: /home/deployer/plater
+      FRONTEND_PORT: 2288
+      BACKEND_PORT: 22883
+
+    steps:
+      # 1️⃣ Checkout the repository on the runner
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # 2️⃣ Cache and install cloudflared
+      - name: Cache cloudflared
+        uses: actions/cache@v3
+        with:
+          path: /usr/local/bin/cloudflared
+          key: cloudflared-linux-amd64-latest
+
+      - name: Install cloudflared
+        run: |
+          if ! command -v cloudflared &> /dev/null; then
+            curl -L https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64 \
+              -o cloudflared
+            chmod +x cloudflared
+            sudo mv cloudflared /usr/local/bin/cloudflared
+          else
+            echo "cloudflared already installed"
+          fi
+
+      # 3️⃣ Setup SSH with private key stored in GitHub secrets
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      # 4️⃣ Configure SSH (Cloudflare Tunnel)
+      - name: Configure SSH via Cloudflare Tunnel
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+
+          cat << 'EOF' > ~/.ssh/config
+          Host $SSH_HOST
+            User $SSH_USER
+            ProxyCommand cloudflared access ssh --hostname %h
+            StrictHostKeyChecking no
+          EOF
+
+          chmod 600 ~/.ssh/config
+
+      # 5️⃣ Sync entire project to the server (optimized with gitignore)
+      - name: Sync project to server
+        run: |
+          rsync -az \
+            --filter=':- .gitignore' \
+            --exclude='.git' \
+            --exclude='.env*' \
+            --delete \
+            ./ $SSH_HOST:$SSH_PATH/
+
+      # 6️⃣ Validate server connectivity
+      - name: Validate server connectivity
+        run: |
+          ssh $SSH_HOST "echo '✓ SSH connection successful'"
+
+      # 7️⃣ Run deployment script on the server
+      - name: Deploy with docker-compose
+        run: |
+          ssh $SSH_HOST << 'EOF'
+            set -e
+            
+            cd $SSH_PATH
+            
+            # Rebuild and restart containers
+            echo "🔄 Stopping containers..."
+            docker compose down
+            
+            echo "🚀 Building and starting containers..."
+            docker compose up --build -d
+            
+            # Verify services
+            echo "✓ Verifying services..."
+            docker compose ps
+            
+            # Wait for services to stabilize with timeout
+            echo "⏳ Waiting for services to stabilize..."
+            max_attempts=30
+            attempt=0
+            while [ $attempt -lt $max_attempts ]; do
+              if docker compose ps | grep -q "Up"; then
+                echo "✓ Services are running"
+                break
+              fi
+              attempt=$((attempt + 1))
+              sleep 1
+            done
+            
+            # Show initialization logs
+            echo "📋 Latest logs:"
+            docker compose logs --tail=30
+          EOF
+
+      # 8️⃣ Notification on success
+      - name: Deployment Success
+        if: success()
+        run: |
+          echo "✅ Deployment completed successfully"
+          echo "Frontend: http://$SSH_HOST:$FRONTEND_PORT"
+          echo "Backend: http://$SSH_HOST:$BACKEND_PORT"
+
+      # 9️⃣ Notification on failure
+      - name: Deployment Failed
+        if: failure()
+        run: |
+          echo "❌ Deployment failed. Check the logs above."
+          exit 1
