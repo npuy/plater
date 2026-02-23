@@ -42,8 +42,8 @@ jobs:
           chmod 700 ~/.ssh
 
           cat << 'EOF' > ~/.ssh/config
-          Host $SSH_HOST
-            User $SSH_USER
+          Host ssh.nicolaspereira.me
+            User deployer
             ProxyCommand cloudflared access ssh --hostname %h
             StrictHostKeyChecking no
           EOF
