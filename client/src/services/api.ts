@@ -1,6 +1,6 @@
 import type { Plate, CreatePlateDTO } from "../types";
 
-const API_URL = "http://localhost:3000/api";
+const API_URL = `${import.meta.env.VITE_API_URL}/api`;
 
 export const createPlate = async (data: CreatePlateDTO): Promise<Plate> => {
   const formData = new FormData();
@@ -44,5 +44,5 @@ export const getPlates = async (filters?: {
 };
 
 export const getImageUrl = (imagePath: string): string => {
-  return `http://localhost:3000${imagePath}`;
+  return `${import.meta.env.VITE_API_URL}${imagePath}`;
 };
