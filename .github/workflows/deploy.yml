@@ -21,23 +21,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # 2️⃣ Cache and install cloudflared
-      - name: Cache cloudflared
-        uses: actions/cache@v3
-        with:
-          path: /usr/local/bin/cloudflared
-          key: cloudflared-linux-amd64-latest
-
+      # 2️⃣ Install cloudflared
       - name: Install cloudflared
         run: |
-          if ! command -v cloudflared &> /dev/null; then
-            curl -L https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64 \
-              -o cloudflared
-            chmod +x cloudflared
-            sudo mv cloudflared /usr/local/bin/cloudflared
-          else
-            echo "cloudflared already installed"
-          fi
+          curl -L https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64 \
+            -o cloudflared
+          chmod +x cloudflared
+          sudo mv cloudflared /usr/local/bin/cloudflared
 
       # 3️⃣ Setup SSH with private key stored in GitHub secrets
       - name: Setup SSH
