@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useState, useRef, type FormEvent } from "react";
 import { createPlate } from "../services/api";
 import type { CreatePlateDTO } from "../types";
 
@@ -9,11 +9,13 @@ interface PlateFormProps {
 export default function PlateForm({ onSuccess }: PlateFormProps) {
   const [plateNumber, setPlateNumber] = useState("");
   const [date, setDate] = useState("");
+  const [time, setTime] = useState("");
   const [description, setDescription] = useState("");
   const [image, setImage] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -42,6 +44,7 @@ export default function PlateForm({ onSuccess }: PlateFormProps) {
       const data: CreatePlateDTO = {
         plate_number: plateNumber,
         date,
+        time: time || undefined,
         description,
         image,
       };
@@ -51,9 +54,15 @@ export default function PlateForm({ onSuccess }: PlateFormProps) {
       // Limpiar formulario
       setPlateNumber("");
       setDate("");
+      setTime("");
       setDescription("");
       setImage(null);
       setPreview(null);
+      
+      // Resetear el input file
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
 
       onSuccess();
     } catch (err) {
@@ -106,6 +115,18 @@ export default function PlateForm({ onSuccess }: PlateFormProps) {
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
+            Hora de captura (HH:MM)
+          </label>
+          <input
+            type="time"
+            value={time}
+            onChange={(e) => setTime(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
             Descripción
           </label>
           <textarea
@@ -117,18 +138,19 @@ export default function PlateForm({ onSuccess }: PlateFormProps) {
           />
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Imagen *
-          </label>
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleImageChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            required
-          />
-        </div>
+         <div>
+           <label className="block text-sm font-medium text-gray-700 mb-2">
+             Imagen *
+           </label>
+           <input
+             ref={fileInputRef}
+             type="file"
+             accept="image/*"
+             onChange={handleImageChange}
+             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+             required
+           />
+         </div>
 
         {preview && (
           <div className="mt-4">

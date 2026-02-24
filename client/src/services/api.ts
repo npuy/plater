@@ -7,6 +7,9 @@ export const createPlate = async (data: CreatePlateDTO): Promise<Plate> => {
   formData.append("image", data.image);
   formData.append("plate_number", data.plate_number);
   formData.append("date", data.date);
+  if (data.time) {
+    formData.append("time", data.time);
+  }
   if (data.description) {
     formData.append("description", data.description);
   }

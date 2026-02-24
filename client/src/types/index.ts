@@ -3,6 +3,7 @@ export interface Plate {
   plate_number: string;
   image_path: string;
   date: string;
+  time?: string;
   description?: string;
   created_at: string;
 }
@@ -10,6 +11,7 @@ export interface Plate {
 export interface CreatePlateDTO {
   plate_number: string;
   date: string;
+  time?: string;
   description?: string;
   image: File;
 }

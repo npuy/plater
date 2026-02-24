@@ -17,6 +17,7 @@ db.exec(`
     plate_number TEXT NOT NULL,
     image_path TEXT NOT NULL,
     date TEXT NOT NULL,
+    time TEXT,
     description TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   )

@@ -147,7 +147,8 @@ export default function PlateList({ refreshTrigger }: PlateListProps) {
                   {plate.plate_number}
                 </h3>
                 <p className="text-sm text-gray-600 mb-1">
-                  <span className="font-semibold">Fecha:</span> {plate.date}
+                  <span className="font-semibold">Fecha y Hora:</span>{" "}
+                  {plate.date} {plate.time ? plate.time : "-"}
                 </p>
                 {plate.description && (
                   <p className="text-sm text-gray-600 mb-1">
